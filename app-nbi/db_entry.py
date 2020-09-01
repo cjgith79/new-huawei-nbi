@@ -12,7 +12,7 @@ def validate_extension(extension=None):
     if not extension:
         return None
 
-    if extension in ['mml', 'rst']:
+    if extension in ['txt', 'rst']:
         return extension
 
 def db_entry(file_path=None,client_id=None,script_id=None):
@@ -21,12 +21,12 @@ def db_entry(file_path=None,client_id=None,script_id=None):
 
     extension = validate_extension(file_path.split(".")[-1])
     if not extension:
-        print("Valid file extensions: .com .rst")
+        print("Valid file extensions: .txt .rst")
         sys.exit()
 
     create_tables()
 
-    if extension == 'mml':
+    if extension == 'txt':
         process_command_file(file_path=file_path,
             client_id=client_id,script_id=script_id)
 

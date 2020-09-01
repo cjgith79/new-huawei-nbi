@@ -1,10 +1,25 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import configparser
 from decouple import config
 import json
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
+import os
+import sys
 
 from db_entry import db_entry
+from conector_telnet import ConectorTelnet
+from conf import (  FTP_PM_CRED,
+                    CRED_U2020,
+                    pathLocalUp,
+                    pathRemotoUp,
+                    pathLocalDl,
+                    pathRemotoDl
+                )
+from gestor_ftp import GestorFTP
+from utils import createfolder
 
 ENV = config('ENV')
 
@@ -15,7 +30,7 @@ section = 'kafka_' + ENV
 MML_TOPIC = config_dict[section]['mml_topic']
 RST_TOPIC = config_dict[section]['rst_topic']
 PARCIAL_EXECUTION = config_dict[section]['parcial_execution']
-MML_FOLDER_FILES = config_dict[section]['mml_files']
+# MML_FOLDER_FILES = config_dict[section]['mml_files']
 
 consumer = KafkaConsumer(
     MML_TOPIC,
@@ -77,8 +92,12 @@ class Mml_event(object):
 
         return False
 
-    def generate_mml_file(self, dir='.'):
-        path = f"{dir}/{self.id_}.mml"
+    # def generate_mml_file(self, dir='.'):
+    def generate_mml_file(self, dir=os.getcwd()):
+        # path = f"{dir}/{self.id_}.mml"
+        # path = f"{dir}/{self.id_}.txt"
+        # path = os.path.join(dir, self.id_, ".txt")
+        path = f"{os.path.join(dir, self.id_)}.txt"
         print(f"path[{path}]")
         with open(path, 'w') as writer:
             command_list = self.data
@@ -87,11 +106,11 @@ class Mml_event(object):
                 token_ = data_dict['command'].split()[0]
                 print(f"token_[{token_}]")
                 if token_ in self.command_type:
-                    writer.write(f"{data_dict['command']}")
+                    writer.write(f" {data_dict['command']}")
                     writer.write("{"
                                 f"{data_dict['network_element']}"
                                 "}\n")
-        return path
+        return f"{self.id_}.txt"
 
 def get_mml_event(message=None):
     if not message:
@@ -141,7 +160,25 @@ def get_mml_event(message=None):
 #         print(f"\tcommand[{data_dict['command']}]")
 #         print(f"\tnetwork_element[{data_dict['network_element']}]")
 
+def validate_extension(extension=None):
+    if not extension:
+        return None
+
+    if extension in ['txt']:
+        return extension
+
 def consume_events():
+    createfolder(pathLocalUp)
+    createfolder(pathLocalDl)
+
+    ftp = GestorFTP(cred=FTP_PM_CRED,
+        pLu=pathLocalUp, pRu=pathRemotoUp,
+        pld=pathLocalDl, pRd=pathRemotoDl)
+    print(f"ftp[{ftp}]", flush=True)
+
+    telnet = ConectorTelnet(dat=CRED_U2020)
+    print(f"telnet[{telnet}]", flush=True)
+
     print("Previous m in consumer", flush=True)
     for m in consumer:
         print("After m in consumer", flush=True)
@@ -155,14 +192,25 @@ def consume_events():
             # process_mml_event(mml_event=mml_event)
             if mml_event.some_valid():
                 # Debo generar archivo de comandos
-                path = mml_event.generate_mml_file(dir=MML_FOLDER_FILES)
+                # path = mml_event.generate_mml_file(dir=MML_FOLDER_FILES)
+                # path = mml_event.generate_mml_file(dir=f"{MML_FOLDER_FILES}")
+                path = mml_event.generate_mml_file(dir=pathLocalUp)
                 # En base al archivo de comandos grabar en la BD
-                db_entry(file_path=path,client_id=mml_event.client_id,
+                # db_entry(file_path=path,client_id=mml_event.client_id,
+                #    script_id=mml_event.script_id)
+                pathLocalUp
+                db_entry(file_path=os.path.join(pathLocalUp, path),client_id=mml_event.client_id,
                     script_id=mml_event.script_id)
                 # Vía ftp depositar archivo en U2020 folder
+                ftp.enviar(path)
                 # Enviar telnet a U2020
+                telnet.conecta()
+                telnet.ejecuta_scritp(path)
+                telnet.desconecta()
                 # Esperar aparición de archivo de resultados
                 # Traer archivo de resultados
+                ftp.extraer(path[:-4])
+                print('Extrayendo el archivo:', path[:-4])
                 # Actualizar BD
                 # Responder vía Kafka a cliente
                 print("Previous producer.send()", flush=True)
