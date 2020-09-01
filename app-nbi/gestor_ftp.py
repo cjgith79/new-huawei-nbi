@@ -42,6 +42,9 @@ class GestorFTP:
             if(filsize>1 and file.startswith(arch_rem) and file.endswith('rst')):
                 ftp.retrbinary('RETR %s' %file, open(self.path_localDl + file, 'wb').write)
                 band = True
+                # ------------
+                break
+                # ------------
 
         # Extracción
         #filedata = open('resultados.txt', 'w')
@@ -49,7 +52,8 @@ class GestorFTP:
         #filedata.close()
         ftp.quit()
         print('** archivo obtenido ftp **')
-        return band
+        # return band
+        return band, file
 
     def __str__(self):
         return "Soy un gestor de ftp"

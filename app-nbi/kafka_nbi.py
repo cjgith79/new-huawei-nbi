@@ -200,8 +200,9 @@ def consume_events():
                 # En base al archivo de comandos grabar en la BD
                 # db_entry(file_path=path,client_id=mml_event.client_id,
                 #    script_id=mml_event.script_id)
-                pathLocalUp
-                db_entry(file_path=os.path.join(pathLocalUp, path),client_id=mml_event.client_id,
+                # pathLocalUp
+                db_entry(file_path=os.path.join(pathLocalUp, path),
+                    client_id=mml_event.client_id,
                     script_id=mml_event.script_id)
                 # Vía ftp depositar archivo en U2020 folder
                 ftp.enviar(path)
@@ -211,9 +212,12 @@ def consume_events():
                 telnet.desconecta()
                 # Esperar aparición de archivo de resultados
                 # Traer archivo de resultados
-                ftp.extraer(path[:-4])
+                band, path = ftp.extraer(path[:-4])
                 print('Extrayendo el archivo:', path[:-4])
                 # Actualizar BD
+                db_entry(file_path=os.path.join(pathLocalDl, path),
+                    client_id=mml_event.client_id,
+                    script_id=mml_event.script_id)
                 # Responder vía Kafka a cliente
                 print("Previous producer.send()", flush=True)
                 producer.send(RST_TOPIC, value=m.value)
