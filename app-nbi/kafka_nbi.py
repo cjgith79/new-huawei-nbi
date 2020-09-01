@@ -92,11 +92,13 @@ class Mml_event(object):
 
         return False
 
-    # def generate_mml_file(self, dir='.'):
     def generate_mml_file(self, dir=os.getcwd()):
-        # path = f"{dir}/{self.id_}.mml"
-        # path = f"{dir}/{self.id_}.txt"
-        # path = os.path.join(dir, self.id_, ".txt")
+        # --------------------------
+        # self.id_ = "HelloWorld" # It works
+        # self.id_ = self.id_[:8] # It works
+        # self.id_ = self.id_[:16] # It fails
+        self.id_ = self.id_.split('-')[0] # It works
+        # --------------------------
         path = f"{os.path.join(dir, self.id_)}.txt"
         print(f"path[{path}]")
         with open(path, 'w') as writer:
