@@ -67,26 +67,26 @@ class Mml_event(object):
         return message
 
     def is_valid(self):
-        print(f"command_type[{self.command_type}]")
+        # print(f"command_type[{self.command_type}]")
 
         command_list = self.data
         for dict_ in command_list:
             data_dict = dict_['data']
             token_ = data_dict['command'].split()[0]
-            print(f"token_[{token_}]")
+            # print(f"token_[{token_}]")
             if not token_ in self.command_type:
                 return False
 
         return True
 
     def some_valid(self):
-        print(f"command_type[{self.command_type}]")
+        # print(f"command_type[{self.command_type}]")
 
         command_list = self.data
         for dict_ in command_list:
             data_dict = dict_['data']
             token_ = data_dict['command'].split()[0]
-            print(f"token_[{token_}]")
+            # print(f"token_[{token_}]")
             if token_ in self.command_type:
                 return True
 
@@ -100,13 +100,13 @@ class Mml_event(object):
         self.id_ = self.id_.split('-')[0] # It works
         # --------------------------
         path = f"{os.path.join(dir, self.id_)}.txt"
-        print(f"path[{path}]")
+        # print(f"path[{path}]")
         with open(path, 'w') as writer:
             command_list = self.data
             for dict_ in command_list:
                 data_dict = dict_['data']
                 token_ = data_dict['command'].split()[0]
-                print(f"token_[{token_}]")
+                # print(f"token_[{token_}]")
                 if token_ in self.command_type:
                     writer.write(f" {data_dict['command']}")
                     writer.write("{"
@@ -121,25 +121,25 @@ def get_mml_event(message=None):
 
     mml_event = Mml_event()
 
-    print(f"id_[{message['id_']}]")
+    # print(f"id_[{message['id_']}]")
     mml_event.id_ = message['id_']
-    print(f"datetime_[{message['datetime_']}]")
+    # print(f"datetime_[{message['datetime_']}]")
     mml_event.datetime_ = message['datetime_']
-    print(f"type_[{message['type_']}]")
-    print(f"client_id[{message['data']['client_id']}]")
+    # print(f"type_[{message['type_']}]")
+    # print(f"client_id[{message['data']['client_id']}]")
     mml_event.client_id = message['data']['client_id']
-    print(f"script_id[{message['data']['script_id']}]")
+    # print(f"script_id[{message['data']['script_id']}]")
     mml_event.script_id = message['data']['script_id']
-    print(f"command_type[{message['data']['command_type']}]")
+    # print(f"command_type[{message['data']['command_type']}]")
     mml_event.command_type = message['data']['command_type']
     command_list = message['data']['command_list']
     mml_event.data = message['data']['command_list']
 
     for dict_ in command_list:
-        print(f"\tindex[{dict_['index']}]")
+        # print(f"\tindex[{dict_['index']}]")
         data_dict = dict_['data']
-        print(f"\tcommand[{data_dict['command']}]")
-        print(f"\tnetwork_element[{data_dict['network_element']}]")
+        # print(f"\tcommand[{data_dict['command']}]")
+        # print(f"\tnetwork_element[{data_dict['network_element']}]")
 
     return mml_event
 
@@ -176,31 +176,27 @@ def consume_events():
     ftp = GestorFTP(cred=FTP_PM_CRED,
         pLu=pathLocalUp, pRu=pathRemotoUp,
         pld=pathLocalDl, pRd=pathRemotoDl)
-    print(f"ftp[{ftp}]", flush=True)
+    # print(f"ftp[{ftp}]", flush=True)
 
     telnet = ConectorTelnet(dat=CRED_U2020)
-    print(f"telnet[{telnet}]", flush=True)
+    # print(f"telnet[{telnet}]", flush=True)
 
-    print("Previous m in consumer", flush=True)
+    # print("Previous m in consumer", flush=True)
     for m in consumer:
-        print("After m in consumer", flush=True)
-        print(m.value) # this works as expected
+        # print("After m in consumer", flush=True)
+        # print(m.value) # this works as expected
         # show_message(message=m.value)
         mml_event = get_mml_event(message=m.value)
-        print('-' * 20)
+        # print('-' * 20)
         if mml_event:
-            print(f"mml_event[{mml_event}]")
+            # print(f"mml_event[{mml_event}]")
             print('-' * 20)
             # process_mml_event(mml_event=mml_event)
             if mml_event.some_valid():
                 # Debo generar archivo de comandos
-                # path = mml_event.generate_mml_file(dir=MML_FOLDER_FILES)
-                # path = mml_event.generate_mml_file(dir=f"{MML_FOLDER_FILES}")
                 path = mml_event.generate_mml_file(dir=pathLocalUp)
+                print(f"Se generó path[{path}]")
                 # En base al archivo de comandos grabar en la BD
-                # db_entry(file_path=path,client_id=mml_event.client_id,
-                #    script_id=mml_event.script_id)
-                # pathLocalUp
                 db_entry(file_path=os.path.join(pathLocalUp, path),
                     client_id=mml_event.client_id,
                     script_id=mml_event.script_id)
@@ -213,20 +209,20 @@ def consume_events():
                 # Esperar aparición de archivo de resultados
                 # Traer archivo de resultados
                 band, path = ftp.extraer(path[:-4])
-                print('Extrayendo el archivo:', path[:-4])
+                print(f"Se obtuvo path[{path}]")
+                # print('Extrayendo el archivo:', path[:-4])
                 # Actualizar BD
                 db_entry(file_path=os.path.join(pathLocalDl, path),
                     client_id=mml_event.client_id,
                     script_id=mml_event.script_id)
                 # Responder vía Kafka a cliente
-                print("Previous producer.send()", flush=True)
+                # print("Previous producer.send()", flush=True)
                 producer.send(RST_TOPIC, value=m.value)
-                print("After producer.send()", flush=True)
+                # print("After producer.send()", flush=True)
                 # Preguntas:
                 # - qué hago con los archivos generados ?
                 # Sugerencias:
                 # - generar log de proceso
-                pass
             else:
                 # Responder vía Kafka a cliente
                 pass

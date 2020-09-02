@@ -17,13 +17,13 @@ class GestorFTP:
 
     # archivo = nombre del archivo (.txt) Ej: myfile.txt
     def enviar(self, arch):
-        print('*********************************Archivo a enviar por FTP '+arch)
+        # print('*********************************Archivo a enviar por FTP '+arch)
         ftp = FTP(self.ip)
         ftp.login(self.user, self.passw)
         with open(self.path_localUp + arch, 'rb') as f:  #
             ftp.storlines('STOR %s' % self.path_remoto_up + arch, f)
         ftp.quit()
-        print('** archivo enviado ftp **')
+        # print('** archivo enviado ftp **')
 
     def writeline(data):
         filedata.write(data)
@@ -51,7 +51,7 @@ class GestorFTP:
         #ftp.retrlines('RETR ' + self.path_remoto_dl + arch_rem, writeline)
         #filedata.close()
         ftp.quit()
-        print('** archivo obtenido ftp **')
+        # print('** archivo obtenido ftp **')
         # return band
         return band, file
 
