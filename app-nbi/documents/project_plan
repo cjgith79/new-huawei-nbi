@@ -1,0 +1,51 @@
+new_huawei_nbi
+
+FUENTES
+
+Google mail:
+
+label:wom-tasks-nbi-rest-interface 
+https://drive.google.com/file/d/1bH8DhpHp-RyKMusCLdwvhWIOg_rMPiRz/view?ts=5f0c6a4b <-- Plan_RAN_Auto_Optimization.pptx
+
+label:wom-tasks-nbi-rest-interface <-- wom proyect
+https://mail.google.com/mail/u/0/?tab=rm&ogbl#label/Wom%2FTasks%2FNBI+REST+Interface?projector=1
+
+----------------- Trello: NBI Implement REST interface -----------------
+Desarrollo de app. REST API Flask, para enviar conjuntos de comandos a NBI.
+
+Cliente Cmd List
+Lista de comandos enviado por Cliente.
+sent
+'script_id': 001
+'client_id': 092
+'cmd_type': [MOD, ADD, RMV, LST, DSP, ...]
+'cmd_lst':[
+{'cmd':cmd_a ,'cmd_id':0 }
+{'cmd':cmd_b ,'cmd_id':1 }
+.
+.
+{'cmd':cmd_zzz ,'cmd_id':110}
+]
+
+Answer commands
+'cmd_lst':[
+{'cmd':cmd_a ,'cmd_id':0, 'timestamp': 2020-08-12 14:34:31,result:True, om:123123, 'retcode':1231, 'NE':'RM2013'}
+{'cmd':cmd_b ,'cmd_id':1, 'timestamp': 2020-08-12 14:34:34,result:True, om:123123, 'retcode':1231, 'NE':'RM2013'}
+
+Cliente pregunta por comandos
+Pregunta
+Is ready ?
+'script_id': 001
+'client_id': 092
+
+Answer
+if ready: return 'run_ready': True, 'cmds': Answer commands
+if not ready: return 'run_ready': False, 'cmds': empty
+Acciones desde JSON:
+concatenar comandos y generar archivo .mml y dejar en folder script_u2020
+-----------------------------------------------------------------------
+
+August 13, 2020
+
+- extensión archivos de comandos .mml
+- inserción comandos tabla file, sólo ingresar el primer comando (todos pertenecen al mismo archivo)
